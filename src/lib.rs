@@ -21,7 +21,10 @@ fn parse_url(endpoint: &str) -> Result<Url, ParseError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::endpoints::{Ping, GeckoRequest, SimplePrice};
+    use crate::endpoints::{Ping, GeckoRequest, SimplePrice, SimplePriceResponse};
+    use std::fmt::Debug;
+    use std::hash::Hash;
+    use serde::de::DeserializeOwned;
 
     #[test]
     fn test_equal_urls() {
@@ -69,7 +72,10 @@ mod tests {
 
     #[test]
     fn test_simpleprice_with_trait() {
-        let result: serde_json::Value = SimplePrice::new("bitcoin,ethereum".to_string(), "usd,ils".to_string()).get_json().unwrap();
-        println!("body = {:?}", result)
+        let result: SimplePriceResponse = SimplePrice::new("bitcoin,ethereum".to_string(), "usd,ils".to_string()).get_json().unwrap();
+        println!("body = {:?}", result);
+        //if let Some(ans) = result.0.get("bitcoin").unwrap().get("usd") {
+        println!("The price of Bitcoin is: {:?} USD", result.0.get("bitcoin").unwrap().get("usd").unwrap())
+        //}
     }
 }

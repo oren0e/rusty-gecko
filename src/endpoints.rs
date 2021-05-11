@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use anyhow::Result as AnyhowResult;
 use reqwest::blocking::Client;
@@ -28,6 +28,9 @@ pub struct SimplePrice {
     pub include_24hr_change: bool,
     pub include_last_updated_at: bool,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SimplePriceResponse(pub TypeSimplePrices);
 
 impl GeckoRequest for Ping {
     fn get_json<T: DeserializeOwned>(&self) -> AnyhowResult<T> {
