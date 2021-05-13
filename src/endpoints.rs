@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use thiserror::Error;
 use anyhow::Result as AnyhowResult;
 use reqwest::blocking::Client;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
+use serde::__private::de::IdentifierDeserializer;
 
 pub type TypeSimplePrice = HashMap<String, f32>;
 pub type TypeSimplePrices = HashMap<String, TypeSimplePrice>;
@@ -31,6 +33,23 @@ pub struct SimplePrice {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SimplePriceResponse(pub TypeSimplePrices);
+
+#[derive(Error, Debug, PartialOrd, PartialEq)]
+pub enum ResponseError {
+    #[error("GET Error: No such coin found! ({0})")]
+    GetRequestCoin(String),
+    #[error("GET Error: No currency found! ({0})")]
+    GetRequestCurrency(String),
+}
+
+
+impl SimplePriceResponse {
+    pub fn get<S: AsRef<str>>(&self, coin: S, in_currency: S) -> Result<&f32, ResponseError> {
+        let coin = self.0.get(coin.as_ref()).ok_or(ResponseError::GetRequestCoin(coin.as_ref().to_string()))?;
+        let currency = coin.get(in_currency.as_ref()).ok_or(ResponseError::GetRequestCurrency(in_currency.as_ref().to_string()))?;
+        Ok(currency)
+    }
+}
 
 impl GeckoRequest for Ping {
     fn get_json<T: DeserializeOwned>(&self) -> AnyhowResult<T> {

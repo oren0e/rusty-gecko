@@ -21,7 +21,7 @@ fn parse_url(endpoint: &str) -> Result<Url, ParseError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::endpoints::{Ping, GeckoRequest, SimplePrice, SimplePriceResponse};
+    use crate::endpoints::{Ping, GeckoRequest, SimplePrice, SimplePriceResponse, ResponseError};
     use std::fmt::Debug;
     use std::hash::Hash;
     use serde::de::DeserializeOwned;
@@ -75,7 +75,13 @@ mod tests {
         let result: SimplePriceResponse = SimplePrice::new("bitcoin,ethereum".to_string(), "usd,ils".to_string()).get_json().unwrap();
         println!("body = {:?}", result);
         //if let Some(ans) = result.0.get("bitcoin").unwrap().get("usd") {
-        println!("The price of Bitcoin is: {:?} USD", result.0.get("bitcoin").unwrap().get("usd").unwrap())
-        //}
+        //println!("The price of Bitcoin is: {:?} USD", result.0.get("bitcoin").unwrap().get("usd").unwrap());
+        if let Err(e) = result.get("bitcoinuioij", "usd") {
+            eprintln!("{}", e)
+        };
+        if let Err(e) = result.get("bitcoin", "xxx") {
+            assert_eq!(e, ResponseError::GetRequestCurrency("xxx".to_string()))
+        };
+        println!("The price of Bitcoin is: {:?} USD", result.get("bitcoin", "usd").unwrap());
     }
 }
