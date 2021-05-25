@@ -1,15 +1,14 @@
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use thiserror::Error;
 use anyhow::Result as AnyhowResult;
 use reqwest::blocking::Client;
-use serde::de::DeserializeOwned;
-use std::collections::HashMap;
 use serde::__private::de::IdentifierDeserializer;
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
+use thiserror::Error;
 
-pub type TypeSimplePrice = HashMap<String, f32>;
-pub type TypeSimplePrices = HashMap<String, TypeSimplePrice>;
-
+pub type TypeSimplePrice = HashMap<String, f32>; // <Currency, Price>
+pub type TypeSimplePrices = HashMap<String, TypeSimplePrice>; // <Coin, TypeSimplePrice>
 
 pub trait GeckoRequest {
     const API_BASE: &'static str = "https://api.coingecko.com/api/v3/";
@@ -34,7 +33,7 @@ pub struct SimplePrice {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SimplePriceResponse(pub TypeSimplePrices);
 
-#[derive(Error, Debug, PartialOrd, PartialEq)]
+#[derive(Serialize, Deserialize, Error, Debug, PartialOrd, PartialEq)]
 pub enum ResponseError {
     #[error("GET Error: No such coin found! ({0})")]
     GetRequestCoin(String),
@@ -42,11 +41,17 @@ pub enum ResponseError {
     GetRequestCurrency(String),
 }
 
-
 impl SimplePriceResponse {
     pub fn get<S: AsRef<str>>(&self, coin: S, in_currency: S) -> Result<&f32, ResponseError> {
-        let coin = self.0.get(coin.as_ref()).ok_or(ResponseError::GetRequestCoin(coin.as_ref().to_string()))?;
-        let currency = coin.get(in_currency.as_ref()).ok_or(ResponseError::GetRequestCurrency(in_currency.as_ref().to_string()))?;
+        let coin = self
+            .0
+            .get(coin.as_ref())
+            .ok_or(ResponseError::GetRequestCoin(coin.as_ref().to_string()))?;
+        let currency = coin
+            .get(in_currency.as_ref())
+            .ok_or(ResponseError::GetRequestCurrency(
+                in_currency.as_ref().to_string(),
+            ))?;
         Ok(currency)
     }
 }
@@ -64,17 +69,23 @@ impl GeckoRequest for Ping {
 impl GeckoRequest for SimplePrice {
     fn get_json<T: DeserializeOwned>(&self) -> AnyhowResult<T> {
         let response: T = Client::new()
-            .get(format!("{}{}{}", Self::API_BASE, "simple/price?", self.query()))
+            .get(format!(
+                "{}{}{}",
+                Self::API_BASE,
+                "simple/price?",
+                self.query()
+            ))
             .send()?
             .json::<T>()?;
         Ok(response)
     }
 }
 
-
 impl Ping {
     pub fn new() -> Self {
-        Self{ ..Default::default() }
+        Self {
+            ..Default::default()
+        }
     }
 }
 
