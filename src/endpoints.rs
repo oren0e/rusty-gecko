@@ -7,8 +7,11 @@ use serde_json::Value;
 use std::collections::HashMap;
 use thiserror::Error;
 
-pub type TypeSimplePrice = HashMap<String, f32>; // <Currency, Price>
-pub type TypeSimplePrices = HashMap<String, TypeSimplePrice>; // <Coin, TypeSimplePrice>
+pub type Price = f32;
+pub type Coin = String; // type for crypto coin
+pub type Currency = String; // type for currency for displaying coins in
+pub type SimplePrice = HashMap<Currency, Price>; // <Currency, Price>
+pub type SimplePrices = HashMap<Coin, SimplePrice>; // <Coin, TypeSimplePrice>
 
 pub trait GeckoRequest {
     const API_BASE: &'static str = "https://api.coingecko.com/api/v3/";
@@ -21,7 +24,7 @@ pub struct Ping {
 }
 
 #[derive(Debug, Deserialize, Default)]
-pub struct SimplePrice {
+pub struct SimplePriceRequest {
     pub ids: String,
     pub vs_currencies: String,
     pub include_market_cap: bool,
@@ -31,7 +34,7 @@ pub struct SimplePrice {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct SimplePriceResponse(pub TypeSimplePrices);
+pub struct SimplePriceResponse(pub SimplePrices);
 
 #[derive(Serialize, Deserialize, Error, Debug, PartialOrd, PartialEq)]
 pub enum ResponseError {
@@ -66,7 +69,7 @@ impl GeckoRequest for Ping {
     }
 }
 
-impl GeckoRequest for SimplePrice {
+impl GeckoRequest for SimplePriceRequest {
     fn get_json<T: DeserializeOwned>(&self) -> AnyhowResult<T> {
         let response: T = Client::new()
             .get(format!(
@@ -89,7 +92,7 @@ impl Ping {
     }
 }
 
-impl SimplePrice {
+impl SimplePriceRequest {
     pub fn new(ids: String, vs_currencies: String) -> Self {
         Self {
             ids,

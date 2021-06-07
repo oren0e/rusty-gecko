@@ -4,7 +4,7 @@ extern crate fomat_macros;
 mod endpoints;
 
 use anyhow::Result as AnyhowResult;
-use endpoints::{GeckoRequest, ResponseError, SimplePrice, SimplePriceResponse};
+use endpoints::{GeckoRequest, ResponseError, SimplePriceRequest, SimplePriceResponse, SimplePrice, SimplePrices};
 use reqwest;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -24,9 +24,13 @@ impl GeckoClient {
         Self {}
     }
 
-    pub fn get_simple_price(&self, coin_ids: &str, currencies: &str) -> AnyhowResult<SimplePrice> {
-        let result: SimplePrice =
-            SimplePrice::new(coin_ids.to_string(), currencies.to_string()).get_json()?;
+    pub fn get_simple_price(
+        &self,
+        coin_ids: &str,
+        currencies: &str,
+    ) -> AnyhowResult<SimplePrices> {
+        let result: SimplePrices =
+            SimplePriceRequest::new(coin_ids.to_string(), currencies.to_string()).get_json()?;
         Ok(result)
     }
 }
@@ -34,7 +38,9 @@ impl GeckoClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::endpoints::{GeckoRequest, Ping, ResponseError, SimplePrice, SimplePriceResponse};
+    use crate::endpoints::{
+        GeckoRequest, Ping, ResponseError, SimplePriceRequest, SimplePriceResponse,
+    };
     use serde::de::DeserializeOwned;
     use std::fmt::Debug;
     use std::hash::Hash;
@@ -90,7 +96,7 @@ mod tests {
     #[test]
     fn test_simpleprice_with_trait() {
         let result: SimplePriceResponse =
-            SimplePrice::new("bitcoin,ethereum".to_string(), "usd,ils".to_string())
+            SimplePriceRequest::new("bitcoin,ethereum".to_string(), "usd,ils".to_string())
                 .get_json()
                 .unwrap();
         println!("body = {:?}", result);
@@ -111,8 +117,14 @@ mod tests {
     #[test]
     fn test_gecko_client_simple_price() {
         let client = GeckoClient::new();
-        if let Ok(response) = client.get_simple_price("bitcoin", "usd") {
-            println!("The price of Bitcoin is: {:?} USD", response)
-        }
+        let response = match client.get_simple_price("bitcoin", "usd") {
+            Ok(ans) => println!("The price of bitcoin is {:?} USD", ans),
+            Err(e) => panic!("Error: {:?}", e),
+        };
+        //if let Ok(response) = client.get_simple_price("bitcoin", "usd") {
+        //    println!("The price of Bitcoin is: {:?} USD", response)
+        //} else {
+        //    eprintln!("{:?}", Err(response))
+        // }
     }
 }
