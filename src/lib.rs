@@ -2,13 +2,17 @@
 extern crate fomat_macros;
 
 mod endpoints;
+mod utils;
 
 use anyhow::Result as AnyhowResult;
-use endpoints::{GeckoRequest, ResponseError, SimplePriceRequest, SimplePriceResponse, SimplePrice, SimplePrices};
+use endpoints::{
+    GeckoRequest, ResponseError, SimplePrice, SimplePriceRequest, SimplePriceResponse, SimplePrices,
+};
 use reqwest;
 use serde_json::Value;
 use std::collections::HashMap;
 use url::{ParseError, Url};
+use utils::parse_str_args;
 
 const API_BASE: &str = "https://api.coingecko.com/api/v3/";
 
@@ -24,13 +28,18 @@ impl GeckoClient {
         Self {}
     }
 
-    pub fn get_simple_price(
+    // this returns the hashmap as it is because it asks for many coins and currencies
+    // It might be worth adding another method for a single coin and currency to strip one
+    // layer and return SimplePrice, then in that method I can do a hashmap lookup for the desired
+    // key
+    pub fn get_simple_prices(
         &self,
-        coin_ids: &str,
-        currencies: &str,
+        coin_ids: &[&str],
+        currencies: &[&str],
     ) -> AnyhowResult<SimplePrices> {
         let result: SimplePrices =
-            SimplePriceRequest::new(coin_ids.to_string(), currencies.to_string()).get_json()?;
+            SimplePriceRequest::new(parse_str_args(coin_ids), parse_str_args(currencies))
+                .get_json()?;
         Ok(result)
     }
 }
@@ -117,14 +126,29 @@ mod tests {
     #[test]
     fn test_gecko_client_simple_price() {
         let client = GeckoClient::new();
-        let response = match client.get_simple_price("bitcoin", "usd") {
-            Ok(ans) => println!("The price of bitcoin is {:?} USD", ans),
+        let response = match client.get_simple_prices(&["bitcoin"], &["usd"]) {
+            Ok(ans) => println!("The prices of of the supplied coins are: {:?}", ans),
             Err(e) => panic!("Error: {:?}", e),
         };
-        //if let Ok(response) = client.get_simple_price("bitcoin", "usd") {
-        //    println!("The price of Bitcoin is: {:?} USD", response)
-        //} else {
-        //    eprintln!("{:?}", Err(response))
-        // }
+    }
+
+    #[test]
+    fn test_gecko_client_simple_prices() {
+        let client = GeckoClient::new();
+
+        if let Ok(response) =
+            client.get_simple_prices(&["bitcoin", "ethereum", "cosmos"], &["usd", "ils", "eur"])
+        {
+            println!("The answer is: {:?}", response)
+        }
+    }
+
+    #[test]
+    fn test_gecko_client_simple_prices_coin_not_found() {
+        let client = GeckoClient::new();
+
+        if let Ok(response) = client.get_simple_prices(&["ffgh", "bitcoin"], &["usd"]) {
+            println!("The answer is: {:?}", response)
+        }
     }
 }
