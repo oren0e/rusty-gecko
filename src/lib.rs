@@ -5,9 +5,7 @@ mod endpoints;
 mod utils;
 
 use anyhow::Result as AnyhowResult;
-use endpoints::{
-    GeckoRequest, ResponseError, SimplePrice, SimplePriceRequest, SimplePriceResponse, SimplePrices,
-};
+use endpoints::{GeckoRequest, ResponseError, SimplePrice, SimplePriceRequest, SimplePrices};
 use reqwest;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -47,9 +45,7 @@ impl GeckoClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::endpoints::{
-        GeckoRequest, Ping, ResponseError, SimplePriceRequest, SimplePriceResponse,
-    };
+    use crate::endpoints::{GeckoRequest, Ping, ResponseError, SimplePriceRequest};
     use serde::de::DeserializeOwned;
     use std::fmt::Debug;
     use std::hash::Hash;
@@ -102,26 +98,26 @@ mod tests {
         println!("body = {:?}", ping_result)
     }
 
-    #[test]
-    fn test_simpleprice_with_trait() {
-        let result: SimplePriceResponse =
-            SimplePriceRequest::new("bitcoin,ethereum".to_string(), "usd,ils".to_string())
-                .get_json()
-                .unwrap();
-        println!("body = {:?}", result);
-        //if let Some(ans) = result.0.get("bitcoin").unwrap().get("usd") {
-        //println!("The price of Bitcoin is: {:?} USD", result.0.get("bitcoin").unwrap().get("usd").unwrap());
-        if let Err(e) = result.get("bitcoinuioij", "usd") {
-            eprintln!("{}", e)
-        };
-        if let Err(e) = result.get("bitcoin", "xxx") {
-            assert_eq!(e, ResponseError::GetRequestCurrency("xxx".to_string()))
-        };
-        println!(
-            "The price of Bitcoin is: {:?} USD",
-            result.get("bitcoin", "usd").unwrap()
-        );
-    }
+    //    #[test]
+    //    fn test_simpleprice_with_trait() {
+    //        let result: SimplePriceResponse =
+    //            SimplePriceRequest::new("bitcoin,ethereum".to_string(), "usd,ils".to_string())
+    //                .get_json()
+    //                .unwrap();
+    //        println!("body = {:?}", result);
+    //        //if let Some(ans) = result.0.get("bitcoin").unwrap().get("usd") {
+    //        //println!("The price of Bitcoin is: {:?} USD", result.0.get("bitcoin").unwrap().get("usd").unwrap());
+    //        if let Err(e) = result.get("bitcoinuioij", "usd") {
+    //            eprintln!("{}", e)
+    //        };
+    //        if let Err(e) = result.get("bitcoin", "xxx") {
+    //            assert_eq!(e, ResponseError::GetRequestCurrency("xxx".to_string()))
+    //        };
+    //        println!(
+    //            "The price of Bitcoin is: {:?} USD",
+    //            result.get("bitcoin", "usd").unwrap()
+    //        );
+    //    }
 
     #[test]
     fn test_gecko_client_simple_price() {

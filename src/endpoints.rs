@@ -33,8 +33,8 @@ pub struct SimplePriceRequest {
     pub include_last_updated_at: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct SimplePriceResponse(pub SimplePrices);
+//#[derive(Debug, Deserialize, Serialize)]
+//pub struct SimplePriceResponse(pub SimplePrices);
 
 #[derive(Serialize, Deserialize, Error, Debug, PartialOrd, PartialEq)]
 pub enum ResponseError {
@@ -44,20 +44,20 @@ pub enum ResponseError {
     GetRequestCurrency(String),
 }
 
-impl SimplePriceResponse {
-    pub fn get<S: AsRef<str>>(&self, coin: S, in_currency: S) -> Result<&f32, ResponseError> {
-        let coin = self
-            .0
-            .get(coin.as_ref())
-            .ok_or(ResponseError::GetRequestCoin(coin.as_ref().to_string()))?;
-        let currency = coin
-            .get(in_currency.as_ref())
-            .ok_or(ResponseError::GetRequestCurrency(
-                in_currency.as_ref().to_string(),
-            ))?;
-        Ok(currency)
-    }
-}
+//impl SimplePriceResponse {
+//    pub fn get<S: AsRef<str>>(&self, coin: S, in_currency: S) -> Result<&f32, ResponseError> {
+//        let coin = self
+//            .0
+//            .get(coin.as_ref())
+//            .ok_or(ResponseError::GetRequestCoin(coin.as_ref().to_string()))?;
+//        let currency = coin
+//            .get(in_currency.as_ref())
+//            .ok_or(ResponseError::GetRequestCurrency(
+//                in_currency.as_ref().to_string(),
+//            ))?;
+//        Ok(currency)
+//    }
+//}
 
 impl GeckoRequest for Ping {
     fn get_json<T: DeserializeOwned>(&self) -> AnyhowResult<T> {
