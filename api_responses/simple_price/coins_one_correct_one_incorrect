@@ -1,0 +1,11 @@
+ids: "bitcoin,fghjk"
+vs_currencies: "usd,eur"
+
+response code: 200
+response body:
+{
+  "bitcoin": {
+    "usd": 33013,
+    "eur": 27702
+  }
+}

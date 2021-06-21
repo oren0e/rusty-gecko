@@ -1,0 +1,17 @@
+ids: "bitcoin,ethereum"
+vs_currencies: "usd,eur,ils"
+
+response code: 200
+response body:
+{
+  "ethereum": {
+    "usd": 2001.09,
+    "eur": 1679.51,
+    "ils": 6537.2
+  },
+  "bitcoin": {
+    "usd": 32942,
+    "eur": 27648,
+    "ils": 107616
+  }
+}

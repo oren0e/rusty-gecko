@@ -1,0 +1,9 @@
+ids: "bitcoin,ethereum"
+vs_currencies: "yytr,gjhf"
+
+response code: 200
+response body:
+{
+  "bitcoin": {},
+  "ethereum": {}
+}

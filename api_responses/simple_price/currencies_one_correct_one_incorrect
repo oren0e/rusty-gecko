@@ -1,0 +1,13 @@
+ids: "bitcoin,ethereum"
+vs_currencies: "usd,gjhf"
+
+response code: 200
+response body:
+{
+  "bitcoin": {
+    "usd": 32894
+  },
+  "ethereum": {
+    "usd": 1998.06
+  }
+}

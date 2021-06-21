@@ -1,0 +1,19 @@
+ids: "bitcoin,ethereum,cosmos"
+vs_currencies: "usd,eur"
+
+response code: 200
+response body:
+{
+  "ethereum": {
+    "usd": 2003.77,
+    "eur": 1681.42
+  },
+  "bitcoin": {
+    "usd": 33057,
+    "eur": 27739
+  },
+  "cosmos": {
+    "usd": 10.57,
+    "eur": 8.87
+  }
+}
