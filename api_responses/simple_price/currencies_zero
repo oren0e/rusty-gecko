@@ -1,5 +1,7 @@
 curl -X GET "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin%2Cethereum&vs_currencies=" -H "accept: application/json"
 response: {"bitcoin":{},"ethereum":{}}
+response code: 200
 
 curl -X GET "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin%2Cethereum" -H "accept: application/json"
 response: {"error":"Missing parameter vs_currencies"}
+response code: 422

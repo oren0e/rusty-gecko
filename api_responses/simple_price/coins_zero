@@ -1,5 +1,7 @@
 curl -X GET "https://api.coingecko.com/api/v3/simple/price?ids=&vs_currencies=usd%2Ceur" -H "accept: application/json"
 response body: {}
+response code: 200
 
 curl -X GET "https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd%2Ceur" -H "accept: application/json"
 response body: {"error":"Missing parameter ids"}
+response code: 422
