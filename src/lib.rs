@@ -5,7 +5,10 @@ mod endpoints;
 mod utils;
 
 use anyhow::Result as AnyhowResult;
-use endpoints::{GeckoRequest, ResponseError, SimplePrice, SimplePriceRequest, SimplePrices};
+use endpoints::{
+    GeckoRequest, SimplePrice, SimplePriceRequest, SimplePriceResponse, SimplePrices,
+    SimpleResponseError,
+};
 use reqwest;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -34,18 +37,24 @@ impl GeckoClient {
         &self,
         coin_ids: &[&str],
         currencies: &[&str],
-    ) -> AnyhowResult<SimplePrices> {
-        let result: SimplePrices =
+    ) -> Result<SimplePrices, SimpleResponseError> {
+        let result: Result<SimplePrices, SimpleResponseError> =
             SimplePriceRequest::new(parse_str_args(coin_ids), parse_str_args(currencies))
                 .get_json()?;
-        Ok(result)
+        let res = SimplePriceResponse {
+            simple_response: result?,
+        };
+        res.validate_response(coin_ids, currencies)
+        // Ok(result)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::endpoints::{GeckoRequest, Ping, ResponseError, SimplePriceRequest};
+    use crate::endpoints::{
+        GeckoRequest, Ping, SimplePriceRequest, SimplePriceResponse, SimpleResponseError,
+    };
     use serde::de::DeserializeOwned;
     use std::fmt::Debug;
     use std::hash::Hash;
@@ -143,7 +152,7 @@ mod tests {
     fn test_gecko_client_simple_prices_coin_not_found() {
         let client = GeckoClient::new();
 
-        if let Ok(response) = client.get_simple_prices(&["ffgh", "bitcoin"], &["usd"]) {
+        if let Ok(response) = client.get_simple_prices(&[""], &["usd"]) {
             println!("The answer is: {:?}", response)
         }
     }

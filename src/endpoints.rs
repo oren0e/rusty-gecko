@@ -31,31 +31,52 @@ pub struct SimplePriceRequest {
     pub include_last_updated_at: bool,
 }
 
-//#[derive(Debug, Deserialize, Serialize)]
-//pub struct SimplePriceResponse(pub SimplePrices);
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SimplePriceResponse {
+    simple_response: SimplePrices,
+}
+// check for error - returns SimplePrices (with no errors)
+//
 
-#[derive(Serialize, Deserialize, Error, Debug, PartialOrd, PartialEq)]
-pub enum ResponseError {
-    #[error("GET Error: No such coin found! ({0})")]
-    GetRequestCoin(String),
-    #[error("GET Error: No currency found! ({0})")]
-    GetRequestCurrency(String),
+#[derive(Error, Debug, Deserialize)]
+pub enum SimpleResponseError {
+    #[error("No data in input")]
+    EmptyInput,
+
+    #[error("No such coin found! (`{0}`)")]
+    UnknownCoinError(String),
+
+    #[error("No such currency found! (`{0}`)")]
+    UnknownCurrencyError(String),
 }
 
-//impl SimplePriceResponse {
-//    pub fn get<S: AsRef<str>>(&self, coin: S, in_currency: S) -> Result<&f32, ResponseError> {
-//        let coin = self
-//            .0
-//            .get(coin.as_ref())
-//            .ok_or(ResponseError::GetRequestCoin(coin.as_ref().to_string()))?;
-//        let currency = coin
-//            .get(in_currency.as_ref())
-//            .ok_or(ResponseError::GetRequestCurrency(
-//                in_currency.as_ref().to_string(),
-//            ))?;
-//        Ok(currency)
-//    }
-//}
+impl SimplePriceResponse {
+    pub fn validate_response(
+        &self,
+        coin_ids: &[&str],
+        currencies: &[&str],
+    ) -> Result<SimplePrices, SimpleResponseError> {
+        for (coin, coin_response) in self.simple_response {
+            if !coin_ids.contains(&coin.as_str()) {
+                return Err(SimpleResponseError::UnknownCoinError(coin));
+            }
+        }
+        return Ok(self.simple_response);
+    }
+
+    //    pub fn get<S: AsRef<str>>(&self, coin: S, in_currency: S) -> Result<&f32, ResponseError> {
+    //        let coin = self
+    //            .0
+    //            .get(coin.as_ref())
+    //            .ok_or(ResponseError::GetRequestCoin(coin.as_ref().to_string()))?;
+    //        let currency = coin
+    //            .get(in_currency.as_ref())
+    //            .ok_or(ResponseError::GetRequestCurrency(
+    //                in_currency.as_ref().to_string(),
+    //            ))?;
+    //        Ok(currency)
+    //    }
+}
 
 impl GeckoRequest for Ping {
     fn get_json<T: DeserializeOwned>(&self) -> AnyhowResult<T> {
