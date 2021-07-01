@@ -37,8 +37,8 @@ impl GeckoClient {
         &self,
         coin_ids: &[&str],
         currencies: &[&str],
-    ) -> Result<SimplePrices, SimpleResponseError> {
-        let result: Result<SimplePrices, SimpleResponseError> =
+    ) -> AnyhowResult<SimplePrices> {
+        let result: AnyhowResult<SimplePrices, SimpleResponseError> =
             SimplePriceRequest::new(parse_str_args(coin_ids), parse_str_args(currencies))
                 .get_json()?;
         let res = SimplePriceResponse {
@@ -55,6 +55,7 @@ mod tests {
     use crate::endpoints::{
         GeckoRequest, Ping, SimplePriceRequest, SimplePriceResponse, SimpleResponseError,
     };
+    use anyhow::Context;
     use serde::de::DeserializeOwned;
     use std::fmt::Debug;
     use std::hash::Hash;
@@ -155,5 +156,15 @@ mod tests {
         if let Ok(response) = client.get_simple_prices(&[""], &["usd"]) {
             println!("The answer is: {:?}", response)
         }
+    }
+
+    #[test]
+    fn test_get_simple_prices_response_error() {
+        let client = GeckoClient::new();
+
+        let response = client
+            .get_simple_prices(&["bitcoin"], &["usd"])?
+            .context(format!("Wrong inputs"));
+        println!("The answer is: {:?}", response)
     }
 }

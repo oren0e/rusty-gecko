@@ -33,7 +33,7 @@ pub struct SimplePriceRequest {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SimplePriceResponse {
-    simple_response: SimplePrices,
+    pub simple_response: SimplePrices,
 }
 // check for error - returns SimplePrices (with no errors)
 //
@@ -55,13 +55,13 @@ impl SimplePriceResponse {
         &self,
         coin_ids: &[&str],
         currencies: &[&str],
-    ) -> Result<SimplePrices, SimpleResponseError> {
-        for (coin, coin_response) in self.simple_response {
+    ) -> AnyhowResult<SimplePrices> {
+        for (coin, coin_response) in &self.simple_response {
             if !coin_ids.contains(&coin.as_str()) {
-                return Err(SimpleResponseError::UnknownCoinError(coin));
+                return Err(SimpleResponseError::UnknownCoinError(coin.to_string()).into());
             }
         }
-        return Ok(self.simple_response);
+        return Ok(self.simple_response.clone());
     }
 
     //    pub fn get<S: AsRef<str>>(&self, coin: S, in_currency: S) -> Result<&f32, ResponseError> {
