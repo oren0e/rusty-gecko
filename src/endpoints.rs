@@ -13,7 +13,7 @@ pub type SimplePrices = HashMap<Coin, SimplePrice>; // <Coin, TypeSimplePrice>
 
 pub trait GeckoRequest {
     const API_BASE: &'static str = "https://api.coingecko.com/api/v3/";
-    fn get_json<T: DeserializeOwned>(&self) -> AnyhowResult<T>;
+    fn get_json<T: DeserializeOwned>(&self) -> Result<T, SimpleResponseError>;
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -64,10 +64,10 @@ impl SimplePriceResponse {
         &self,
         coin_ids: &[&str],
         currencies: &[&str],
-    ) -> AnyhowResult<SimplePrices> {
+    ) -> Result<SimplePrices, SimpleResponseError> {
         for (coin, coin_response) in &self.simple_response {
             if !coin_ids.contains(&coin.as_str()) {
-                return Err(SimpleResponseError::UnknownCoinError(coin.to_string()).into());
+                return Err(SimpleResponseError::UnknownCoinError(coin.to_string()));
             }
         }
         return Ok(self.simple_response.clone());
@@ -88,7 +88,7 @@ impl SimplePriceResponse {
 }
 
 impl GeckoRequest for Ping {
-    fn get_json<T: DeserializeOwned>(&self) -> AnyhowResult<T> {
+    fn get_json<T: DeserializeOwned>(&self) -> Result<T, SimpleResponseError> {
         let response: T = Client::new()
             .get(format!("{}{}", Self::API_BASE, "ping"))
             .send()?
@@ -98,7 +98,7 @@ impl GeckoRequest for Ping {
 }
 
 impl GeckoRequest for SimplePriceRequest {
-    fn get_json<T: DeserializeOwned>(&self) -> AnyhowResult<T> {
+    fn get_json<T: DeserializeOwned>(&self) -> Result<T, SimpleResponseError> {
         let response: T = Client::new()
             .get(format!(
                 "{}{}{}",

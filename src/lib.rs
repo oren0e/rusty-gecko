@@ -37,8 +37,8 @@ impl GeckoClient {
         &self,
         coin_ids: &[&str],
         currencies: &[&str],
-    ) -> AnyhowResult<SimplePrices> {
-        let result: AnyhowResult<SimplePrices, SimpleResponseError> =
+    ) -> Result<SimplePrices, SimpleResponseError> {
+        let result: Result<SimplePrices, SimpleResponseError> =
             SimplePriceRequest::new(parse_str_args(coin_ids), parse_str_args(currencies))
                 .get_json()?;
         let res = SimplePriceResponse {
@@ -163,7 +163,7 @@ mod tests {
         let client = GeckoClient::new();
 
         let response = client
-            .get_simple_prices(&["bitcoin"], &["usd"])?
+            .get_simple_prices(&["bitcoin"], &["usd"])
             .context(format!("Wrong inputs"));
         println!("The answer is: {:?}", response)
     }
