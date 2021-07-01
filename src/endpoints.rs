@@ -65,8 +65,8 @@ impl SimplePriceResponse {
         coin_ids: &[&str],
         currencies: &[&str],
     ) -> Result<SimplePrices, SimpleResponseError> {
-        for (coin, coin_response) in &self.simple_response {
-            if !coin_ids.contains(&coin.as_str()) {
+        for coin in coin_ids {
+            if !&self.simple_response.contains_key(&coin.to_string()) {
                 return Err(SimpleResponseError::UnknownCoinError(coin.to_string()));
             }
         }
