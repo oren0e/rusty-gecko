@@ -163,7 +163,7 @@ mod tests {
         let client = GeckoClient::new();
 
         let response = client
-            .get_simple_prices(&["jkhg"], &["usd"])
+            .get_simple_prices(&["jkhg", "bitcoin"], &["usd"])
             .context(format!("Wrong inputs"));
         println!("The answer is: {:?}", response)
     }
