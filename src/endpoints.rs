@@ -69,6 +69,18 @@ impl SimplePriceResponse {
             if !&self.simple_response.contains_key(&coin.to_string()) {
                 return Err(SimpleResponseError::UnknownCoinError(coin.to_string()));
             }
+            for currency in currencies {
+                if &self
+                    .simple_response
+                    .get(&coin.to_string())
+                    .map(|x| x.contains_key(&currency.to_string()))
+                    == &Some(true)
+                {
+                    return Err(SimpleResponseError::UnknownCurrencyError(
+                        currency.to_string(),
+                    ));
+                }
+            }
         }
         return Ok(self.simple_response.clone());
     }

@@ -167,4 +167,14 @@ mod tests {
             .context(format!("Wrong inputs"));
         println!("The answer is: {:?}", response)
     }
+
+    #[test]
+    fn test_get_simple_prices_currency_error() {
+        let client = GeckoClient::new();
+
+        let response = client
+            .get_simple_prices(&["bitcoin"], &["dfgfd"])
+            .context(format!("Wrong inputs"));
+        println!("The answer is: {:?}", response)
+    }
 }
