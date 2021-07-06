@@ -74,7 +74,7 @@ impl SimplePriceResponse {
                     .simple_response
                     .get(&coin.to_string())
                     .map(|x| x.contains_key(&currency.to_string()))
-                    == &Some(true)
+                    != &Some(true)
                 {
                     return Err(SimpleResponseError::UnknownCurrencyError(
                         currency.to_string(),
