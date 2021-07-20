@@ -1,25 +1,16 @@
-use anyhow::Result as AnyhowResult;
 use reqwest::blocking::Client;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use thiserror::Error;
+
+use crate::errors::SimpleResponseError;
+use crate::generic::GeckoRequest;
 
 pub type Price = f32;
-pub type Coin = String; // type for crypto coin
-pub type Currency = String; // type for currency for displaying coins in
-pub type SimplePrice = HashMap<Currency, Price>; // <Currency, Price>
-pub type SimplePrices = HashMap<Coin, SimplePrice>; // <Coin, TypeSimplePrice>
-
-pub trait GeckoRequest {
-    const API_BASE: &'static str = "https://api.coingecko.com/api/v3/";
-    fn get_json<T: DeserializeOwned>(&self) -> Result<T, SimpleResponseError>;
-}
-
-#[derive(Debug, Deserialize, Default)]
-pub struct Ping {
-    pub gecko_says: String,
-}
+pub type Coin = String;
+pub type Currency = String;
+pub type SimplePrice = HashMap<Currency, Price>;
+pub type SimplePrices = HashMap<Coin, SimplePrice>;
 
 #[derive(Debug, Deserialize, Default)]
 pub struct SimplePriceRequest {
@@ -34,29 +25,6 @@ pub struct SimplePriceRequest {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SimplePriceResponse {
     pub simple_response: SimplePrices,
-}
-// check for error - returns SimplePrices (with no errors)
-//
-
-#[derive(Error, Debug)]
-pub enum SimpleResponseError {
-    #[error("No data in input")]
-    EmptyInputError,
-
-    #[error("No such coin found! (`{0}`)")]
-    UnknownCoinError(String),
-
-    #[error("No such currency found! (`{0}`)")]
-    UnknownCurrencyError(String),
-
-    #[error("HTTP Error")]
-    HttpError(#[from] reqwest::Error),
-
-    #[error("IO Error")]
-    IOError(#[from] std::io::Error),
-
-    #[error("Deserialization Error")]
-    DeserializationError(#[from] serde_json::Error),
 }
 
 impl SimplePriceResponse {
@@ -84,29 +52,6 @@ impl SimplePriceResponse {
         }
         return Ok(self.simple_response.clone());
     }
-
-    //    pub fn get<S: AsRef<str>>(&self, coin: S, in_currency: S) -> Result<&f32, ResponseError> {
-    //        let coin = self
-    //            .0
-    //            .get(coin.as_ref())
-    //            .ok_or(ResponseError::GetRequestCoin(coin.as_ref().to_string()))?;
-    //        let currency = coin
-    //            .get(in_currency.as_ref())
-    //            .ok_or(ResponseError::GetRequestCurrency(
-    //                in_currency.as_ref().to_string(),
-    //            ))?;
-    //        Ok(currency)
-    //    }
-}
-
-impl GeckoRequest for Ping {
-    fn get_json<T: DeserializeOwned>(&self) -> Result<T, SimpleResponseError> {
-        let response: T = Client::new()
-            .get(format!("{}{}", Self::API_BASE, "ping"))
-            .send()?
-            .json::<T>()?;
-        Ok(response)
-    }
 }
 
 impl GeckoRequest for SimplePriceRequest {
@@ -121,14 +66,6 @@ impl GeckoRequest for SimplePriceRequest {
             .send()?
             .json::<T>()?;
         Ok(response)
-    }
-}
-
-impl Ping {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
     }
 }
 
@@ -158,5 +95,49 @@ impl SimplePriceRequest {
                 "&include_last_updated_at=true"
             }
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::client::GeckoClient;
+    use anyhow::Context;
+
+    #[test]
+    fn test_get_simple_prices_correct() {
+        let client = GeckoClient::new();
+
+        let response =
+            client.get_simple_prices(&["bitcoin", "ethereum", "cosmos"], &["usd", "ils", "eur"]);
+        println!("The answer is: {:?}", response)
+    }
+
+    #[test]
+    fn test_get_simple_prices_coin_not_found() {
+        let client = GeckoClient::new();
+
+        let response = client.get_simple_prices(&[""], &["usd"]);
+        println!("The answer is: {:?}", response)
+    }
+
+    #[test]
+    fn test_get_simple_prices_response_error() {
+        let client = GeckoClient::new();
+
+        let response = client
+            .get_simple_prices(&["jkhg", "bitcoin"], &["usd"])
+            .context(format!("Wrong inputs"));
+        println!("The answer is: {:?}", response)
+    }
+
+    #[test]
+    fn test_get_simple_prices_currency_error() {
+        let client = GeckoClient::new();
+
+        let response = client
+            .get_simple_prices(&["bitcoin"], &["dfgfd"])
+            .context(format!("Wrong inputs"));
+        println!("The answer is: {:?}", response)
     }
 }
